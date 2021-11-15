@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mapontil <mapontil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/11/08 13:16:24 by mapontil          #+#    #+#             */
-/*   Updated: 2021/11/15 11:53:51 by mapontil         ###   ########.fr       */
+/*   Updated: 2021/11/11 14:41:55 by mapontil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*ft_checknl(char **str, char *afternl, char **buff)
 {
@@ -43,30 +43,38 @@ int	ft_read(int fd, char *buff, int len)
 	return (j);
 }
 
+void	ft_update(int *j, int fd, char **temp)
+{
+	char	buff[BUFFER_SIZE + 1];
+
+	*j = ft_read(fd, buff, BUFFER_SIZE);
+	if (*j > 0)
+		*temp = ft_strjoin(*temp, buff);
+}
+
 char	*get_next_line(int fd)
 {
 	char		*temp;
-	static char	afternl[BUFFER_SIZE + 1];
-	char		buff[BUFFER_SIZE + 1];
+	static char	afternl[1024][BUFFER_SIZE + 1];
 	char		*str;
 	int			j;
 
 	str = NULL;
 	temp = NULL;
-	if (*afternl)
+	if (fd < 0)
+		return (NULL);
+	if (*afternl[fd])
 	{
-		temp = ft_strjoin(temp, afternl);
-		if (ft_checknl(&str, afternl, &temp))
+		temp = ft_strjoin(temp, afternl[fd]);
+		if (ft_checknl(&str, afternl[fd], &temp))
 			return (ft_exit(str, &temp));
-		ft_strlcpy(afternl, "\0", 1);
+		ft_strlcpy(afternl[fd], "\0", 1);
 	}
 	j = BUFFER_SIZE;
 	while (j > 0)
 	{
-		j = ft_read(fd, buff, BUFFER_SIZE);
-		if (j > 0)
-			temp = ft_strjoin(temp, buff);
-		if (ft_checknl(&str, afternl, &temp))
+		ft_update(&j, fd, &temp);
+		if (ft_checknl(&str, afternl[fd], &temp))
 			return (ft_exit(str, &temp));
 	}
 	return (temp);
